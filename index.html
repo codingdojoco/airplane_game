@@ -1,0 +1,164 @@
+<html>
+<head>
+	<title>Airplane Shooting Game</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+	<style>
+		#canvas{
+			position:relative;
+			border:1px solid silver;
+			width:500px;
+			height:400px;
+		}
+		.bullet{
+			position:absolute;
+			background-color:red;
+			border: 1px solid red;
+			width:10px;
+			height:10px;
+			border-radius:10px;
+		}
+		.enemy_plane{
+			position:absolute;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="canvas">
+		<img src="airplane.gif" id="my_plane" style="position:absolute; top:300px; left:200px;" />
+	</div>
+
+	<script type="text/javascript">
+
+
+	function GameEngine()
+	{
+		//create a new airplane object
+		var airplane = new MyAirplane();
+		var bullets = [];
+		var bullets_total = 0;
+		var keyPressed = [];
+		var enemies = [];
+		//create two enemies
+
+		this.createNewEnemy = function()
+		{
+			var enemy = new EnemyPlane({x:parseInt(Math.random()*6)*80, y:parseInt(Math.random()*3)*80}, enemies.length, parseInt(Math.random()*2));
+			enemies.push(enemy);
+			console.log(enemies);
+		}
+
+		this.createNewEnemy();
+		this.createNewEnemy();
+		this.createNewEnemy();
+		this.createNewEnemy();
+
+		//game loop that goes forever
+		this.loop = function()
+		{
+			airplane.draw();
+
+			for(var i=0; i<bullets.length; i++)
+			{
+				bullets[i].moveUp();
+			}
+		}
+
+		//to detect multiple keys being pressed 
+		$(document).keydown(function(e) {
+			keyPressed[e.keyCode] = true;
+			
+			if(keyPressed[37])	//left arrow
+				airplane.performAction("MOVE_LEFT");
+			if(keyPressed[39]) //right arrow
+				airplane.performAction("MOVE_RIGHT");
+			if(keyPressed[38])	//left arrow
+				airplane.performAction("MOVE_UP");
+			if(keyPressed[40]) //right arrow
+				airplane.performAction("MOVE_DOWN");
+			if(keyPressed[32])	//space key
+			{
+				bullet = new Bullet({x: airplane.position.x+32, y: airplane.position.y-12}, bullets_total++); //create a new bullet
+				bullets.push(bullet); //store the bullet in the bullets array
+			}
+		}).keyup(function(e) {
+			delete keyPressed[e.keyCode];
+		});
+
+		setInterval(this.loop, 50);
+	}
+
+	function MyAirplane()
+	{
+		this.position = {x:200, y:300}
+		
+		this.draw = function()
+		{
+			$('#my_plane').css({top: this.position.y+"px", left: this.position.x+"px" });
+		}
+		this.performAction = function(action)
+		{
+			if(action == "MOVE_LEFT")
+				this.position.x -= 10;
+			else if(action == 'MOVE_RIGHT')
+				this.position.x += 10;
+			else if(action == 'MOVE_UP')
+				this.position.y -= 10;
+			else if(action == 'MOVE_DOWN')
+				this.position.y += 10;
+		}
+	}
+
+	function Bullet(initial_coordinates, id)
+	{
+		this.position = {x:initial_coordinates.x, y:initial_coordinates.y};
+		this.bullet_html_id = id;
+
+		this.initialize = function()
+		{
+			$('#canvas').append('<div class="bullet" id="bullet'+this.bullet_html_id+'"></div>'); //create the bullet
+			this.draw();	//update the coordinates
+		}
+
+		this.draw = function()
+		{
+			$('#bullet'+this.bullet_html_id).css({top: this.position.y+"px", left: this.position.x+"px" });
+		}
+
+		this.moveUp = function()
+		{
+			this.position.y -= 10;
+			this.draw();
+		}
+
+		this.initialize();
+	}
+
+	function EnemyPlane(initial_coordinates, id, type)
+	{
+		this.position = {x:initial_coordinates.x, y:initial_coordinates.y};
+		this.plane_html_id = id;
+
+		this.initialize = function(type)
+		{
+			$('#canvas').append('<img class="enemy_plane" src="enemy'+type+'.gif" id="enemy'+this.plane_html_id+'" />'); //create the bullet
+			this.draw();	//update the coordinates
+		}
+
+		this.draw = function()
+		{
+			$('#enemy'+this.plane_html_id).css({top: this.position.y+"px", left: this.position.x+"px" });
+		}
+
+		this.initialize(type);
+
+	}
+
+	var engine = new GameEngine();
+
+
+	</script>
+
+</body>
+</html>
